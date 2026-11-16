@@ -1,4 +1,20 @@
-
 # Seed curriculum (private, kept locally)
 docs/curriculum.md
 Seed*.md
+
+# Environment: a disposable build product (uv sync recreates it)
+.venv/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# Secrets: real values live here; .env.example documents the names
+.env
+
+# Data: never committed; regenerable from code (see data/README.md)
+data/*
+!data/README.md
+*.sqlite
+*.db
+
+.DS_Store

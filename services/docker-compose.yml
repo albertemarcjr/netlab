@@ -1,0 +1,26 @@
+# Postgres for notebook 03 §F. Run every command from the repo root.
+#   start:                 docker compose -f services/docker-compose.yml --env-file .env up -d
+#   status:                docker compose -f services/docker-compose.yml --env-file .env ps
+#   stop, keep the data:   docker compose -f services/docker-compose.yml --env-file .env down
+#   stop, delete the data: docker compose -f services/docker-compose.yml --env-file .env down -v
+
+name: netlab                                    # project name: prefixes container, network and volume names
+
+services:                                       # each entry under here becomes one container
+  db:                                           # service name; other containers in this project reach it at hostname "db"
+    image: postgres:17                          # official Postgres image, major version 17, pulled from Docker Hub
+    environment:                                # the image reads these on first start to create the database
+      POSTGRES_USER: ${POSTGRES_USER}           # filled in from .env (--env-file); no secrets in this file
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}   # filled in from .env
+      POSTGRES_DB: ${POSTGRES_DB}               # name of the database to create on first start
+    ports:                                      # port mapping: NAT from the host into the container
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432" # host side bound to 127.0.0.1 only, so the LAN can't reach the database
+    volumes:                                    # keep the data outside the container's own disposable filesystem
+      - pgdata:/var/lib/postgresql/data         # named volume: survives "down", deleted by "down -v"
+    healthcheck:                                # lets "docker ps" report healthy once Postgres accepts connections
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]  # the check command, run inside the container
+      interval: 2s                              # how often to run it
+      retries: 30                               # how many failures before the container is marked unhealthy
+
+volumes:                                        # named volumes used above
+  pgdata:                                       # Docker manages where this lives on disk
