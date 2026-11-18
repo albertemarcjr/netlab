@@ -1,1 +1,1 @@
-"""netlab: a learning workspace for code, taught through networking."""
+"""netlab: a learning workspace for writing code from the ground up."""

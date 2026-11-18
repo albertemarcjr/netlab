@@ -1,6 +1,6 @@
 # netlab
 
-A learning workspace for writing code, taught through networking and security. It contains three notebooks you work through in order, a small Python package that grows as you write it, scripts, two local services, and a Postgres setup.
+A learning workspace for writing code from the ground up, using plain everyday data (a small shop's orders, a train map). It contains three notebooks you work through in order, practice notebooks that warm you up for each exercise, a small Python package that grows as you write it, scripts, two local services, and a Postgres setup.
 
 The exercises are yours to solve. Any AI assistant working in this repo is told to coach you instead of solving them (see `AGENTS.md`). When you're genuinely stuck, say "show me the code".
 
@@ -16,9 +16,11 @@ cp .env.example .env         # then put real values in .env (it is gitignored)
 
 ## The order
 
-1. `notebooks/01_shapes_and_walking_them.ipynb`: data shapes, and the logic that walks them
+1. `notebooks/01_shapes_and_walking_them.ipynb`: data shapes, and the logic that walks them. Each exercise names a warm-up in `notebooks/practice/` to do first.
 2. `notebooks/02_libraries_modules_scripts.ipynb`: where code comes from, modules, scripts, cores, pandas vs polars
-3. `notebooks/03_clients_servers_and_data.ipynb`: sockets, HTTP, APIs, failure, databases, data formats. Needs extra terminals for the services.
+3. `notebooks/03_clients_servers_and_data.ipynb`: programs talking to each other (sockets, HTTP, APIs), failure, databases, data formats. Needs extra terminals for the services.
+
+`notebooks/practice/` holds the warm-ups: `00_toolbox` is a "what's that thing called?" reference, `01_functions` comes first, and `02`–`09` each prepare for specific notebook 01 exercises (the notebooks say which, at each exercise).
 
 Start the notebooks with:
 
@@ -56,7 +58,7 @@ netlab/
 ├── pyproject.toml     project metadata, dependencies, entry points
 ├── uv.lock            exact resolved versions (committed)
 ├── .env.example       names of the environment variables, with fake values
-├── notebooks/         01 → 02 → 03
+├── notebooks/         01 → 02 → 03, plus practice/ warm-ups
 ├── src/netlab/        the importable package; you add modules to it
 ├── scripts/           thin entry points that import from src/
 ├── services/          echo server, inventory API, Postgres (see services/README.md)

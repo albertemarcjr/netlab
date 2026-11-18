@@ -1,7 +1,7 @@
 [project]
 name = "netlab"
 version = "0.1.0"
-description = "A learning workspace: code foundations taught through networking"
+description = "A learning workspace: code foundations, from the ground up"
 readme = "README.md"
 authors = [
     { name = "Albert Marc", email = "albertemarcjr@gmail.com" }

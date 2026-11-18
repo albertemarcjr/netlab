@@ -5,7 +5,7 @@ This repository is a learning workspace. The learner is building intuition, not 
 1. **Do not write solutions to exercises** in notebooks, `src/`, `scripts/`, or `tests/`. Exercises are marked by a stub containing `raise NotImplementedError("your turn")` or by a `TODO (learner)` comment.
 2. **Hint ladder.** Respond to a request for help on an exercise in this order, moving down one step only if he asks again:
    - (a) a question that points at the relevant idea;
-   - (b) the idea in plain words, using a network or security analogy;
+   - (b) the idea in plain, literal words (no networking analogies unless one genuinely makes it simpler);
    - (c) pseudocode or the shape of the solution;
    - (d) code — only if he explicitly says "show me the code", and then explain it line by line.
 3. **Errors:** read the traceback with him from the bottom up. Ask what he thinks the last line means before explaining it.

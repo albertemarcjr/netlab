@@ -1,4 +1,4 @@
-"""Inventory API: the notebook 01 topology, served as JSON over HTTP. Standard library only.
+"""Inventory API: a small shop's product catalog, served as JSON over HTTP. Standard library only.
 
 Run (from the repo root, in its own terminal):
     uv run python services/inventory_api.py      # http://127.0.0.1:8000
@@ -6,9 +6,9 @@ Stop: Ctrl+C
 
 Endpoints
     GET  /health            {"status": "ok"}
-    GET  /devices           every device, as a list of JSON objects
-    GET  /devices/<name>    one device; 404 if unknown              TODO (learner)
-    POST /flows             store one JSON flow record              TODO (learner)
+    GET  /products          every product, as a list of JSON objects
+    GET  /products/<name>   one product; 404 if unknown             TODO (learner)
+    POST /orders            store one JSON order                    TODO (learner)
     GET  /slow?seconds=N    waits N seconds, then answers (timeouts, notebook 03 §E, §H)
     GET  /boom              always 500: a bug on the server side
     GET  /flaky             fails the first 2 of every 3 calls with 503 (retries, §E)
@@ -18,7 +18,7 @@ import argparse
 import json
 import threading
 import time
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, urlparse
 
@@ -26,35 +26,35 @@ from netlab import paths
 
 
 @dataclass
-class Device:  # the same dataclass as notebook 01 §E
+class Product:  # like the Product dataclass in notebook 01 §E
     name: str
-    ip: str
-    role: str
-    links: list[str] = field(default_factory=list)
+    price_cents: int
+    stock: int
+    category: str
 
 
-# The notebook 01 topology: name -> (ip, role, links)
-_TOPOLOGY = {
-    "edge-rtr": ("10.255.0.1", "internet-edge", ["fw-01"]),
-    "fw-01": ("10.255.0.2", "firewall", ["edge-rtr", "core-rtr-01", "core-rtr-02"]),
-    "core-rtr-01": ("10.0.0.1", "core", ["fw-01", "core-rtr-02", "dist-sw-01", "dist-sw-02"]),
-    "core-rtr-02": ("10.0.0.2", "core", ["fw-01", "core-rtr-01", "dist-sw-01", "dist-sw-02"]),
-    "dist-sw-01": ("10.10.0.1", "distribution", ["core-rtr-01", "core-rtr-02", "acc-sw-01", "acc-sw-02"]),
-    "dist-sw-02": ("10.20.0.1", "distribution", ["core-rtr-01", "core-rtr-02", "acc-sw-03"]),
-    "acc-sw-01": ("10.10.1.1", "access", ["dist-sw-01"]),
-    "acc-sw-02": ("10.10.2.1", "access", ["dist-sw-01"]),
-    "acc-sw-03": ("10.20.30.1", "access", ["dist-sw-02"]),
+# A small shop's catalog: name -> (price in cents, how many in stock, category)
+_CATALOG = {
+    "apple": (50, 120, "fruit"),
+    "bread": (325, 40, "bakery"),
+    "milk": (199, 60, "dairy"),
+    "coffee": (875, 25, "drinks"),
+    "cheese": (640, 30, "dairy"),
+    "eggs": (420, 50, "dairy"),
+    "tea": (350, 45, "drinks"),
+    "honey": (760, 15, "pantry"),
+    "jam": (450, 20, "pantry"),
 }
-DEVICES = {name: Device(name, ip, role, links) for name, (ip, role, links) in _TOPOLOGY.items()}
+PRODUCTS = {name: Product(name, price, stock, category) for name, (price, stock, category) in _CATALOG.items()}
 
-RECEIVED_FLOWS = paths.DATA_PROCESSED / "received_flows.jsonl"
+RECEIVED_ORDERS = paths.DATA_PROCESSED / "received_orders.jsonl"
 
 _flaky_lock = threading.Lock()  # requests arrive on several threads; guard the shared counter
 _flaky_calls = 0
 
 
 class Handler(BaseHTTPRequestHandler):
-    # HTTP/1.1 keeps the TCP connection open between requests (connection reuse, 03 §H).
+    # HTTP/1.1 keeps the connection open between requests (connection reuse, 03 §H).
     # That only works if every response says how long its body is (Content-Length).
     protocol_version = "HTTP/1.1"
 
@@ -72,10 +72,10 @@ class Handler(BaseHTTPRequestHandler):
         parts = [p for p in url.path.split("/") if p]
         if url.path == "/health":
             self.send_json(200, {"status": "ok"})
-        elif url.path == "/devices":
-            self.send_json(200, [asdict(d) for d in DEVICES.values()])
-        elif len(parts) == 2 and parts[0] == "devices":
-            self.get_device(parts[1])
+        elif url.path == "/products":
+            self.send_json(200, [asdict(p) for p in PRODUCTS.values()])
+        elif len(parts) == 2 and parts[0] == "products":
+            self.get_product(parts[1])
         elif url.path == "/slow":
             seconds = float(parse_qs(url.query).get("seconds", ["1"])[0])
             time.sleep(min(seconds, 30))
@@ -94,30 +94,30 @@ class Handler(BaseHTTPRequestHandler):
             self.send_json(404, {"error": f"no route for {url.path}"})
 
     def do_POST(self) -> None:
-        if urlparse(self.path).path == "/flows":
-            self.post_flow()
+        if urlparse(self.path).path == "/orders":
+            self.post_order()
         else:
             self.close_connection = True  # we didn't read the body, so don't reuse this connection
             self.send_json(404, {"error": f"no route for {self.path}"})
 
-    def get_device(self, name: str) -> None:
+    def get_product(self, name: str) -> None:
         """TODO (learner), notebook 03 §C.
 
-        Respond 200 with the device as JSON (asdict, like /devices does for each one),
-        or 404 with {"error": "no such device"} if name is not a key of DEVICES.
+        Respond 200 with the product as JSON (asdict, like /products does for each one),
+        or 404 with {"error": "no such product"} if name is not a key of PRODUCTS.
         """
-        self.send_json(501, {"error": "not implemented yet: GET /devices/<name>"})
+        self.send_json(501, {"error": "not implemented yet: GET /products/<name>"})
 
-    def post_flow(self) -> None:
+    def post_order(self) -> None:
         """TODO (learner), notebook 03 §C.
 
         Read the request body (its size in bytes is in the Content-Length header; read
         exactly that many from self.rfile), parse it as JSON, append it as one line to
-        RECEIVED_FLOWS (call paths.ensure_dirs() first), and respond 201 {"status": "stored"}.
+        RECEIVED_ORDERS (call paths.ensure_dirs() first), and respond 201 {"status": "stored"}.
         If the body is not valid JSON, respond 400 {"error": "invalid JSON"}.
         """
         self.close_connection = True  # the body is left unread; remove this line once you read it
-        self.send_json(501, {"error": "not implemented yet: POST /flows"})
+        self.send_json(501, {"error": "not implemented yet: POST /orders"})
 
     def log_message(self, fmt, *args) -> None:  # one short line per request, to the terminal
         print(f"{self.client_address[0]} {fmt % args}", flush=True)
@@ -126,7 +126,7 @@ class Handler(BaseHTTPRequestHandler):
 def main() -> None:
     parser = argparse.ArgumentParser(description="Inventory API (stdlib http.server).")
     parser.add_argument("--host", default="127.0.0.1", help="bind address (default: 127.0.0.1)")
-    parser.add_argument("--port", type=int, default=8000, help="TCP port (default: 8000)")
+    parser.add_argument("--port", type=int, default=8000, help="port number (default: 8000)")
     args = parser.parse_args()
     # ThreadingHTTPServer handles each connection on its own thread, so one slow
     # request (/slow) doesn't block everyone else.

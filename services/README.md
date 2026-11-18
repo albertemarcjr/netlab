@@ -4,7 +4,7 @@ Long-running processes. Each one blocks forever waiting for connections, so each
 
 | Service | Start | Listens on | Used in |
 |---|---|---|---|
-| Echo server: raw TCP, sends back what it receives | `uv run python services/echo_server.py` | `127.0.0.1:9000` (`--host`, `--port` to change) | 03 §A |
+| Echo server: sends back what it receives | `uv run python services/echo_server.py` | `127.0.0.1:9000` (`--host`, `--port` to change) | 03 §A |
 | Inventory API: HTTP JSON, stdlib `http.server` | `uv run python services/inventory_api.py` | `127.0.0.1:8000` (`--host`, `--port` to change) | 03 §C, §E, §H, §I |
 | Postgres 17 in Docker | `docker compose -f services/docker-compose.yml --env-file .env up -d` | `127.0.0.1:5432` (`POSTGRES_PORT` in `.env`) | 03 §F |
 
@@ -18,6 +18,6 @@ docker compose -f services/docker-compose.yml --env-file .env down -v   # stop a
 
 Check what's listening on a port: `lsof -nP -iTCP:8000 -sTCP:LISTEN`.
 
-Both Python services bind to `127.0.0.1` by default, which makes them reachable from this machine only. `--host 0.0.0.0` exposes them on every network interface. Notebook 03 §A shows the difference.
+Both Python services bind to `127.0.0.1` by default, which makes them reachable from this machine only. `--host 0.0.0.0` makes them reachable from other machines on your network too. Notebook 03 §A shows the difference.
 
-`inventory_api.py` has two `TODO (learner)` handlers for you to write in notebook 03 §C: `GET /devices/<name>` and `POST /flows`.
+`inventory_api.py` has two `TODO (learner)` handlers for you to write in notebook 03 §C: `GET /products/<name>` and `POST /orders`.

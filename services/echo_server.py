@@ -1,4 +1,4 @@
-"""A raw TCP echo server: whatever bytes a client sends, it sends straight back.
+"""An echo server: whatever bytes a client sends, it sends straight back.
 
 Run (from the repo root, in its own terminal):
     uv run python services/echo_server.py                  # 127.0.0.1:9000, this machine only

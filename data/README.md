@@ -11,16 +11,16 @@ Paths to these folders come from `src/netlab/paths.py` (`paths.DATA_RAW`, `paths
 
 | File | Made by | How to regenerate |
 |---|---|---|
-| `raw/flows.csv`, `raw/flows.log` | notebook 02 §C (mock flows, seeded) | re-run notebook 02 §C |
-| `raw/service-names-port-numbers.csv` + `.provenance.json` | notebook 02 §C, downloaded from IANA | delete it and re-run the download cell |
-| `raw/flows_small.csv` | `scripts/make_flows.py` (02 §E) | `uv run python scripts/make_flows.py --rows 1000 --seed 7 --out data/raw/flows_small.csv` |
-| `raw/flows_big.parquet` | `make-flows` (02 §G) | see the command in notebook 02 §G |
+| `raw/orders.csv`, `raw/orders.log` | notebook 02 §C (mock shop orders, seeded) | re-run notebook 02 §C |
+| `raw/country-codes.csv` + `.provenance.json` | notebook 02 §C, downloaded from GitHub (datasets/country-codes) | delete it and re-run the download cell |
+| `raw/orders_small.csv` | `scripts/make_orders.py` (02 §E) | `uv run python scripts/make_orders.py --rows 1000 --seed 7 --out data/raw/orders_small.csv` |
+| `raw/orders_big.parquet` | `make-orders` (02 §G) | see the command in notebook 02 §G |
 | `processed/netlab.sqlite` | notebook 03 §F | re-run notebook 03 §F |
-| `processed/received_flows.jsonl` | the inventory API's `POST /flows` (03 §C) | post the flows again |
-| `processed/devices.parquet` | `scripts/collect.py` (03 §I) | run the script |
+| `processed/received_orders.jsonl` | the inventory API's `POST /orders` (03 §C) | post the orders again |
+| `processed/products.parquet` | `scripts/collect.py` (03 §I) | run the script |
 
 ## Downloaded sources
 
-- IANA Service Name and Transport Protocol Port Number Registry:
-  `https://www.iana.org/assignments/service-names-port-numbers/service-names-port-numbers.csv`
-  (reachable when this repo was built on 2026-11-16, so no substitute source was needed). Each download writes a provenance file next to the data with the URL, retrieval time, byte count and SHA-256.
+- Country codes (ISO 3166), from the Open Knowledge Foundation's datasets project:
+  `https://raw.githubusercontent.com/datasets/country-codes/main/data/country-codes.csv`
+  (checked reachable on 2026-11-17). Each download writes a provenance file next to the data with the URL, retrieval time, byte count and SHA-256.
